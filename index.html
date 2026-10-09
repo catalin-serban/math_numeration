@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Țara Numerelor – Matematică pentru cei mici</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core styles: design tokens -> app shell -> shared components -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/home.css">
+
+  <!-- LESSON STYLES: add one <link> per lesson (css/lessons/<lesson-id>.css) -->
+  <link rel="stylesheet" href="css/lessons/counting-columns.css">
+  <link rel="stylesheet" href="css/lessons/kakooma.css">
+</head>
+<body class="preload">
+
+  <header class="app-header">
+    <button type="button" class="icon-btn" id="sidebarToggle" aria-label="Deschide/închide meniul" aria-controls="sidebar" aria-expanded="true">☰</button>
+
+    <a class="brand" href="#/">
+      <span class="brand-logo" aria-hidden="true"><span>1</span><span>2</span><span>3</span></span>
+      <span class="brand-text">
+        <strong>Țara Numerelor</strong>
+        <small>Matematică pentru cei mici</small>
+      </span>
+    </a>
+
+    <nav class="header-crumbs" id="breadcrumbs" aria-label="Unde sunt"></nav>
+
+    <div class="header-actions">
+      <button type="button" class="icon-btn" id="soundToggle" aria-label="Sunet" aria-pressed="true">🔊</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <aside class="sidebar" id="sidebar" aria-label="Capitole">
+      <nav id="sidebarNav"></nav>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <main class="content" id="content" tabindex="-1"></main>
+  </div>
+
+  <!--
+    Script order matters (classic scripts, no build step, works from file://):
+      1. core/namespace.js  – creates window.MathApp + lesson registry
+      2. core/*             – curriculum (menu), sound, effects, ui helpers, sidebar, router
+      3. pages/* + lessons/* – each file calls MathApp.registerLesson({...})
+      4. main.js            – boots the app (must stay LAST)
+  -->
+  <script src="js/core/namespace.js"></script>
+  <script src="js/core/curriculum.js"></script>
+  <script src="js/core/sound.js"></script>
+  <script src="js/core/effects.js"></script>
+  <script src="js/core/ui.js"></script>
+  <script src="js/core/sidebar.js"></script>
+  <script src="js/core/router.js"></script>
+
+  <script src="js/pages/home.js"></script>
+
+  <!-- LESSON SCRIPTS: add one <script> per lesson (js/lessons/<lesson-id>.js) -->
+  <script src="js/lessons/counting-columns.js"></script>
+  <script src="js/lessons/kakooma.js"></script>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

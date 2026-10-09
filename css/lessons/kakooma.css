@@ -1,0 +1,183 @@
+/* =========================================================================
+   LESSON kakooma ("Kakooma") – all classes prefixed "kk-".
+   Each shape gets its color from --kk-c (var(--place-N) or var(--primary)).
+   Shapes are positioned by --x / --y (percent of the square board), set by JS.
+   The game phase lives on .kk[data-phase="play|final|done"].
+   ========================================================================= */
+
+.kk { container: kk / inline-size; }
+
+.kk-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: 24px;
+  align-items: start;
+}
+
+/* ---------- Board ---------- */
+.kk-board-card { display: grid; gap: 14px; padding: 18px; }
+
+.kk-board {
+  position: relative;
+  width: min(100%, 620px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.kk-shape {
+  --size: 27%;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  transition:
+    width .6s cubic-bezier(.34, 1.56, .64, 1),
+    scale .5s ease,
+    opacity .5s ease,
+    filter .5s ease;
+}
+.kk-shape svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.kk-outline {
+  fill: var(--surface);
+  stroke: color-mix(in srgb, var(--kk-c) 70%, black);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  transition: fill .4s;
+}
+.kk-hole {
+  fill: var(--surface);
+  stroke: color-mix(in srgb, var(--kk-c) 70%, black);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+.kk-sectors, .kk-hole { transition: opacity .3s; }
+
+.kk-sector { cursor: pointer; outline: none; }
+.kk-sector polygon {
+  fill: color-mix(in srgb, var(--kk-c) 12%, white);
+  stroke: color-mix(in srgb, var(--kk-c) 45%, white);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transition: fill .2s;
+}
+.kk-sector:nth-child(even) polygon { fill: color-mix(in srgb, var(--kk-c) 26%, white); }
+.kk-sector:hover polygon,
+.kk-sector:focus-visible polygon { fill: color-mix(in srgb, var(--kk-c) 45%, white); }
+.kk-sector:focus-visible polygon { stroke: var(--accent); stroke-width: 5; }
+.kk-sector.is-wrong polygon { fill: color-mix(in srgb, var(--warm) 60%, white); }
+.kk-sector.is-almost polygon { fill: color-mix(in srgb, var(--accent) 70%, white); }
+
+.kk text {
+  font-family: var(--font);
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+}
+.kk-sector text { fill: var(--ink); }
+.kk-sector text.is-new { animation: kk-fade-in .5s ease; }
+@keyframes kk-fade-in { from { opacity: 0; } }
+
+/* Solved shape: one big number fills the whole shape */
+.kk-big {
+  fill: var(--surface);
+  stroke: color-mix(in srgb, var(--kk-c) 65%, black);
+  stroke-width: 6;
+  paint-order: stroke;
+  opacity: 0;
+  transition: opacity .35s ease .1s;
+}
+.kk-shape.is-solved .kk-outline { fill: var(--kk-c); }
+.kk-shape.is-solved .kk-sectors,
+.kk-shape.is-solved .kk-hole { opacity: 0; pointer-events: none; }
+.kk-shape.is-solved .kk-big { opacity: 1; }
+
+/* Final (center) shape */
+.kk-final { --size: 40%; filter: grayscale(.7); opacity: .65; }
+.kk[data-phase="play"] .kk-final .kk-sector { pointer-events: none; }
+.kk[data-phase="final"] .kk-final,
+.kk[data-phase="done"] .kk-final { --size: 50%; filter: none; opacity: 1; }
+.kk[data-phase="final"] .kk-final { animation: kk-glow 1.6s ease-in-out infinite; }
+.kk[data-phase="final"] .kk-shape:not(.kk-final),
+.kk[data-phase="done"] .kk-shape:not(.kk-final) { scale: .8; }
+@keyframes kk-glow {
+  50% { filter: drop-shadow(0 0 14px color-mix(in srgb, var(--primary) 55%, transparent)); }
+}
+
+.kk-progress { margin: 0; text-align: center; color: var(--ink-soft); font-size: 1.1rem; font-weight: 600; }
+
+.kk-again { display: none; }
+.kk[data-phase="done"] .kk-again { display: inline-flex; }
+
+/* ---------- Mascot ---------- */
+.kk-mascot { display: flex; align-items: flex-end; gap: 12px; }
+.kk-mascot-face { font-size: 3.2rem; line-height: 1; animation: kk-buzz 2.6s ease-in-out infinite; }
+@keyframes kk-buzz {
+  0%, 100% { translate: 0 0; rotate: -6deg; }
+  50% { translate: 4px -8px; rotate: 6deg; }
+}
+.kk-mascot-bubble {
+  flex: 1;
+  padding: 12px 16px;
+  border: 3px solid var(--primary-soft);
+  border-radius: 20px 20px 20px 6px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.kk-say { margin: 0; font-size: 1.05rem; line-height: 1.5; }
+
+/* ---------- Side panel ---------- */
+.kk-side { display: grid; gap: 20px; }
+.kk-rule { margin: 0; font-size: 1.1rem; line-height: 1.55; }
+
+.kk-settings { display: grid; gap: 16px; }
+.kk-field { min-width: 0; margin: 0; padding: 0; border: 0; }
+.kk-field legend { padding: 0; margin-bottom: 8px; color: var(--ink-soft); font-size: .95rem; font-weight: 600; }
+
+.kk-seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.kk-seg label { flex: 1 1 auto; cursor: pointer; }
+.kk-seg input { position: absolute; opacity: 0; pointer-events: none; }
+.kk-seg span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .2s, border-color .2s, color .2s;
+}
+.kk-seg input:checked + span { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-dark); }
+.kk-seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.kk-max { display: flex; align-items: center; gap: 10px; margin-top: 10px; color: var(--ink-soft); font-weight: 600; }
+.kk-max input {
+  width: 90px;
+  padding: 8px 10px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+.kk-max input:focus { outline: none; border-color: var(--primary); }
+.kk-limit-hint { margin: 8px 0 0; color: var(--ink-soft); font-size: .92rem; }
+
+/* ---------- Responsive (container queries on .kk) ---------- */
+@container kk (max-width: 900px) {
+  .kk-stage { grid-template-columns: 1fr; }
+}
+@container kk (max-width: 520px) {
+  .kk-board-card { padding: 10px; }
+  .kk-mascot-face { font-size: 2.4rem; }
+}
