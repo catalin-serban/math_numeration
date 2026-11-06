@@ -1,0 +1,384 @@
+/* =========================================================================
+   LESSON make-ten ("Facem 10!") – all classes prefixed "mt-".
+   Bubble size lives in --b (set on .mt-snake-card, shrunk by container queries).
+   Bubble colors via data-c: a = first term, b = second term (addition),
+   out = taken away (subtraction). The full zone of 10 uses --place-1 (tens).
+   State hooks on .mt: data-op="add|sub", data-level="friends|guided|numbers",
+   data-step="need|left|result|done".
+   ========================================================================= */
+
+.mt {
+  container: mt / inline-size;
+  display: grid;
+  gap: 20px;
+  --c-a: var(--primary);
+  --c-b: var(--accent);
+  --c-out: var(--warm);
+  --c-res: var(--success);
+  --snake: var(--success);
+}
+
+/* ---------- Toolbar: settings + progress ---------- */
+.mt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 14px 18px;
+}
+.mt-settings { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.mt-progress { margin: 0; color: var(--ink-soft); font-size: 1.1rem; font-weight: 600; white-space: nowrap; }
+
+.mt-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.mt-seg label { cursor: pointer; }
+.mt-seg input { position: absolute; opacity: 0; pointer-events: none; }
+.mt-seg span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .2s, border-color .2s, color .2s;
+}
+.mt-seg input:checked + span { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-dark); }
+.mt-seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Snake ---------- */
+.mt-snake-card { --b: 40px; --gap: 4px; display: grid; gap: 18px; justify-items: center; }
+.mt[data-level="numbers"] .mt-snake-card { display: none; }
+
+.mt-snake {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 4px 6px;
+}
+
+.mt-tail {
+  flex: none;
+  width: calc(var(--b) * .7);
+  height: calc(var(--b) * .6);
+  margin-right: -3px;
+  background: var(--snake);
+  border-radius: 100% 0 0 100% / 50% 0 0 50%;
+}
+
+.mt-zone {
+  position: relative;
+  flex: none;
+  padding: 8px 10px;
+  border: 3px dashed color-mix(in srgb, var(--place-1) 55%, white);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--snake) 22%, white);
+  transition: border-color .3s, box-shadow .3s;
+}
+.mt-zone-tag {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 0 12px;
+  border: 3px solid color-mix(in srgb, var(--place-1) 55%, white);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--place-1);
+  font-weight: 700;
+  line-height: 1.4;
+  transition: background .3s, color .3s, border-color .3s;
+}
+.mt-zone.is-ten {
+  border-style: solid;
+  border-color: var(--place-1);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--place-1) 20%, transparent);
+}
+.mt-zone.is-ten .mt-zone-tag { border-color: var(--place-1); background: var(--place-1); color: #fff; }
+
+.mt-slots,
+.mt-rest,
+.mt-tray-bubbles { display: flex; align-items: center; gap: var(--gap); }
+.mt-slots .mt-slot:nth-child(5),
+.mt-rest .mt-bubble:nth-child(5),
+.mt-tray-bubbles > :nth-child(5) { margin-right: 10px; }
+
+.mt-slot {
+  position: relative;
+  flex: none;
+  width: var(--b);
+  height: var(--b);
+  border: 2px dashed var(--ink-muted);
+  border-radius: 50%;
+}
+.mt-slot.is-filled { border-color: transparent; }
+.mt-slot > .mt-bubble { position: absolute; inset: -2px; }
+.mt-slot.is-hint { animation: mt-hint .45s ease-in-out 4 alternate; }
+
+.mt-break { display: none; }
+
+.mt-rest {
+  min-width: 10px;
+  min-height: calc(var(--b) + 12px);
+  margin-left: -3px;
+  padding: 6px 4px 6px 6px;
+  background: color-mix(in srgb, var(--snake) 30%, white);
+  border-radius: 0 999px 999px 0;
+}
+
+.mt-head {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: calc(var(--b) * 1.5);
+  height: calc(var(--b) * 1.25);
+  margin-left: -8px;
+  background: var(--snake);
+  border-radius: 45% 60% 60% 45% / 50%;
+  box-shadow: inset -6px -6px 0 color-mix(in srgb, var(--snake) 75%, black);
+}
+.mt-eye {
+  position: absolute;
+  top: 16%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 62% 50%, var(--ink) 0 34%, #fff 37%);
+}
+.mt-eye:nth-child(1) { left: 26%; }
+.mt-eye:nth-child(2) { left: 58%; }
+.mt-head::after { /* smile */
+  content: '';
+  position: absolute;
+  left: 48%;
+  bottom: 18%;
+  width: 34%;
+  height: 18%;
+  border-bottom: 3px solid var(--ink);
+  border-radius: 0 0 50% 50%;
+}
+.mt-tongue {
+  position: absolute;
+  top: 56%;
+  right: -16px;
+  width: 20px;
+  height: 9px;
+  background: var(--warm);
+  clip-path: polygon(0 35%, 70% 35%, 100% 0, 82% 50%, 100% 100%, 70% 65%, 0 65%);
+  transform-origin: left center;
+  animation: mt-tongue 3.2s ease-in-out infinite;
+}
+@keyframes mt-tongue {
+  0%, 70%, 100% { scale: 0 1; }
+  78%, 92% { scale: 1 1; }
+}
+.mt-head.is-happy { animation: mt-hop .5s ease 3; }
+@keyframes mt-hop {
+  50% { translate: 0 -12px; rotate: -8deg; }
+}
+
+/* ---------- Bubbles ---------- */
+.mt-bubble {
+  --c: var(--c-a);
+  position: relative;
+  z-index: 1;
+  display: block;
+  flex: none;
+  width: var(--b);
+  height: var(--b);
+  border: 2px solid color-mix(in srgb, var(--c) 70%, black);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .85) 0 13%, transparent 15%),
+    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--c) 70%, white), var(--c) 72%);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 55%, black);
+  transition: border-color .4s, box-shadow .4s;
+}
+.mt-bubble[data-c="b"] { --c: var(--c-b); }
+.mt-bubble[data-c="out"] { --c: var(--c-out); opacity: .75; }
+.mt-bubble.is-flying { z-index: 20; }
+.mt-bubble.is-hint { animation: mt-hint .45s ease-in-out 4 alternate; }
+@keyframes mt-hint {
+  to { scale: 1.2; border-color: var(--accent-dark); box-shadow: 0 0 0 4px var(--accent); }
+}
+
+.mt-bubble.is-grab {
+  cursor: grab;
+  touch-action: none;
+  animation: mt-wiggle 1.8s ease-in-out infinite;
+}
+.mt-bubble.is-grab:hover { scale: 1.12; }
+.mt-bubble.is-dragging { z-index: 30; scale: 1.25; cursor: grabbing; animation: none; }
+.mt-bubble.is-grab.is-hint { animation: mt-hint .45s ease-in-out 4 alternate; }
+@keyframes mt-wiggle {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -8deg; }
+  75% { rotate: 8deg; }
+}
+
+/* ---------- Tray: pool of gold bubbles (addition) / basket (subtraction) ---------- */
+.mt-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+  min-height: calc(var(--b) + 28px);
+  padding: 12px 18px;
+  border: 3px dashed color-mix(in srgb, var(--c-b) 60%, white);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+.mt[data-op="sub"] .mt-tray { border-color: color-mix(in srgb, var(--c-out) 55%, white); }
+.mt-tray-label { color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
+.mt-tray-bubbles { flex-wrap: wrap; row-gap: 6px; }
+
+/* ---------- Equation + number bond ---------- */
+.mt-play {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.mt-eq-card { display: grid; gap: 16px; }
+.mt-eq {
+  --h: 64px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  font-size: 2.6rem;
+  font-weight: 700;
+}
+.mt-n, .mt-op { height: var(--h); line-height: var(--h); }
+.mt-op { color: var(--ink-soft); }
+.mt-ten { color: var(--place-1); }
+
+.mt-split { display: flex; flex-direction: column; align-items: center; }
+.mt-legs {
+  width: 116px;
+  height: 34px;
+  stroke: var(--ink-soft);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.mt-parts { display: flex; gap: 18px; }
+
+.mt-box {
+  --box-c: var(--ink-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--h);
+  height: var(--h);
+  padding: 0 8px;
+  border: 3px dashed var(--ink-muted);
+  border-radius: 16px;
+  color: var(--ink-muted);
+  transition: background .3s, border-color .3s, color .3s;
+}
+.mt-box[data-c="b"] { --box-c: var(--c-b); }
+.mt-box[data-c="out"] { --box-c: var(--c-out); }
+.mt-box[data-c="res"] { --box-c: var(--c-res); }
+.mt-parts .mt-box { min-width: 52px; height: 52px; font-size: 1.9rem; }
+.mt-box.is-active {
+  border-color: var(--primary);
+  color: var(--primary);
+  animation: mt-pulse 1.4s ease-in-out infinite;
+}
+.mt-box.is-filled {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--box-c) 80%, black);
+  background: color-mix(in srgb, var(--box-c) 28%, white);
+  color: var(--ink);
+}
+@keyframes mt-pulse {
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 22%, transparent); }
+}
+
+.mt-lines {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mt-lines li {
+  padding: 6px 16px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+.mt-lines li.is-summary {
+  margin-top: 6px;
+  border: 2px solid var(--primary-soft);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 1.45rem;
+  text-align: center;
+}
+
+/* ---------- Question, choices, mascot ---------- */
+.mt-ask-card { display: grid; gap: 16px; }
+.mt-question { margin: 0; font-size: 1.45rem; line-height: 1.4; text-align: center; }
+.mt-choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+.mt-choice { min-width: 96px; font-size: 2.1rem; }
+.mt-choice.is-typing { outline: 3px solid var(--accent); outline-offset: 3px; }
+.mt-choice.is-wrong { --btn-bg: color-mix(in srgb, var(--warm) 22%, white); --btn-shadow: var(--warm); --btn-ink: var(--warm-dark); }
+.mt-choice.is-right,
+.mt-choice.is-right:disabled { --btn-bg: var(--success); --btn-shadow: var(--success-dark); --btn-ink: #fff; opacity: 1; }
+.mt-tip { margin: 0; color: var(--ink-soft); font-size: .95rem; line-height: 1.5; text-align: center; }
+
+.mt-next { display: none; }
+.mt[data-step="done"] .mt-next { display: inline-flex; }
+.mt[data-step="done"] .mt-choices,
+.mt[data-step="done"] .mt-tip { display: none; }
+
+.mt-mascot { display: flex; align-items: flex-end; gap: 12px; }
+.mt-mascot-face { font-size: 3rem; line-height: 1; animation: mt-sway 2.8s ease-in-out infinite; }
+@keyframes mt-sway {
+  0%, 100% { rotate: -6deg; }
+  50% { rotate: 6deg; translate: 0 -4px; }
+}
+.mt-mascot-bubble {
+  flex: 1;
+  padding: 12px 16px;
+  border: 3px solid var(--primary-soft);
+  border-radius: 20px 20px 20px 6px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.mt-say { margin: 0; font-size: 1.05rem; line-height: 1.5; }
+
+/* ---------- Responsive (container queries on .mt) ---------- */
+/* Narrow: the zone of 10 stays on row 1, the rest of the snake moves to row 2. */
+@container mt (max-width: 1020px) {
+  .mt-snake { flex-wrap: wrap; justify-content: flex-start; row-gap: 14px; }
+  .mt-break { display: block; flex-basis: 100%; height: 0; }
+  .mt-snake:has(.mt-rest:empty) .mt-break { display: none; }
+  .mt-snake:has(.mt-rest:empty) .mt-rest { margin-left: -3px; }
+  .mt-rest { margin-left: calc(var(--b) * .7); border-radius: 999px; padding-left: 8px; }
+}
+@container mt (max-width: 860px) {
+  .mt-play { grid-template-columns: 1fr; }
+}
+@container mt (max-width: 600px) {
+  .mt-snake-card { --b: 30px; --gap: 3px; padding: 14px; }
+  .mt-eq { --h: 52px; font-size: 2rem; }
+  .mt-parts .mt-box { min-width: 44px; height: 44px; font-size: 1.5rem; }
+  .mt-choice { min-width: 76px; font-size: 1.7rem; }
+}
+@container mt (max-width: 440px) {
+  .mt-snake-card { --b: 23px; padding: 10px; }
+  .mt-zone { padding: 6px; }
+  .mt-slots .mt-slot:nth-child(5),
+  .mt-rest .mt-bubble:nth-child(5),
+  .mt-tray-bubbles > :nth-child(5) { margin-right: 6px; }
+  .mt-mascot-face { font-size: 2.3rem; }
+}

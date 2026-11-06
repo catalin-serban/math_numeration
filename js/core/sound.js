@@ -1,7 +1,7 @@
 /**
  * SOUND – tiny Web Audio synth (no audio files needed).
  *   MathApp.sound.play('step', digit)  – note that rises with the digit (0..9)
- *   MathApp.sound.play('carry' | 'borrow' | 'start' | 'celebrate' | 'bump')
+ *   MathApp.sound.play('carry' | 'borrow' | 'start' | 'celebrate' | 'bump' | 'ok')
  *   MathApp.sound.tone(freq, delay, duration, type, volume) – for custom sounds
  * Add new presets to PRESETS when a lesson needs them.
  */
@@ -50,6 +50,7 @@
     start: () => arpeggio([392.0, 523.25, 659.25], 0.09, 0.22),
     celebrate: () => arpeggio([523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5], 0.1, 0.3, 'square', 0.05),
     bump: () => tone(165, 0, 0.25, 'sawtooth', 0.06),
+    ok: () => arpeggio([783.99, 1174.66], 0.08, 0.18),
   };
 
   App.sound = {

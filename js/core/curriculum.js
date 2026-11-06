@@ -43,12 +43,19 @@
     {
       id: 'capitol-2',
       number: 2,
-      title: 'Adunarea',
+      title: 'Adunarea și scăderea',
       icon: '➕',
       color: '#2FBF71',
-      description: 'Punem numerele laolaltă și aflăm cât fac împreună.',
+      description: 'Punem numerele laolaltă sau luăm din ele și aflăm cât rămâne.',
       subchapters: [
-        { id: 'adunam-pana-la-10', number: '2.1', title: 'Adunăm până la 10', comingSoon: true },
+        { id: 'adunam-si-scadem-pana-la-10', number: '2.1', title: 'Adunăm și scădem până la 10', comingSoon: true },
+        {
+          id: 'facem-10',
+          number: '2.2',
+          title: 'Facem 10!',
+          description: 'Trucul șarpelui: ajungem întâi la 10, apoi adunăm sau scădem ce a mai rămas.',
+          lessonId: 'make-ten',
+        },
       ],
     },
   ];
